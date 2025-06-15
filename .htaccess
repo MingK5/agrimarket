@@ -1,0 +1,36 @@
+# enable rewriting
+RewriteEngine On
+RewriteBase /agrimarket/
+
+# 1) Block any direct access to /includes just in case
+RewriteRule ^includes/ - [F,L]
+
+# 2) Pretty‐URL → real script mappings
+
+# home page
+RewriteRule ^home/?$                  index.php      [L,QSA]
+
+# login pages
+RewriteRule ^login/admin/?$           auth/login_admin_staff.php      [L,QSA]
+RewriteRule ^login/customer/?$        auth/login_customer_vendor.php  [L,QSA]
+RewriteRule ^login/vendor/?$          auth/login_customer_vendor.php  [L,QSA]
+
+# logout & register
+RewriteRule ^logout/?$                auth/logout.php                 [L,QSA]
+RewriteRule ^register/?$              auth/register_customer_vendor.php [L,QSA]
+
+# dashboard shortcuts
+RewriteRule ^dashboard/vendor/?$      dashboard/vendor_home.php       [L,QSA]
+RewriteRule ^dashboard/staff/?$       dashboard/staff_home.php        [L,QSA]
+RewriteRule ^dashboard/admin/?$       dashboard/admin_home.php        [L,QSA]
+RewriteRule ^dashboard/customer/?$    dashboard/customer_home.php     [L,QSA]
+
+# profile
+RewriteRule ^profile/?$               profile/edit_profile.php        [L,QSA]
+
+# products & analytics
+RewriteRule ^products/?$              product/product.php             [L,QSA]
+RewriteRule ^analytics/?$             analytics/analytics.php         [L,QSA]
+
+# notifications
+RewriteRule ^notifications/?$         notification/notification.php   [L,QSA]
