@@ -14,22 +14,20 @@ if (isset($_SESSION['user'])) {
     }
     // vendors only if premium
     elseif ($userType_Id === 3) {
-        // adjust the path to your db.php as needed
-        // require_once __DIR__ . '/db.php';
+        require_once __DIR__ . '/db.php';
 
-        // $stmt = $pdo->prepare("
-        //     SELECT subscription_tier
-        //       FROM vendors
-        //      WHERE user_id = ?
-        // ");
-        // $stmt->execute([ $_SESSION['user']['id'] ]);
-        // $tier = $stmt->fetchColumn();
+        $stmt = $pdo->prepare("
+            SELECT subscription_tier
+              FROM users
+             WHERE id = ?
+        ");
+        $stmt->execute([ $_SESSION['user']['id'] ]);
+        $tier = $stmt->fetchColumn();
 
-        // if ($tier === 'premium') {
-        //     $showAnalytics = true;
-        // }
+        if ($tier === 'premium') {
+            $showAnalytics = true;
+        }
     }
-    // customers & guests leave as false
 }
 ?>
 
