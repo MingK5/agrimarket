@@ -9,7 +9,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $email = trim($_POST['email']);
     $plainPassword = $_POST['password'];
     $confirmPassword = $_POST['confirm_password'] ?? '';
-    $full_name = trim($_POST['full_name']);
 
     $passwordPattern = "/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,}$/";
     if ($plainPassword !== $confirmPassword) {
@@ -34,30 +33,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $stmt->execute([$plainPassword]);
             $hashedPassword = $stmt->fetchColumn();
 
-            $prefix = ($role === 'customer') ? 'C' : (($role === 'vendor') ? 'V' : 'U');
-
-            $stmt = $pdo->prepare("SELECT public_id FROM users WHERE role = ? AND public_id IS NOT NULL ORDER BY id DESC LIMIT 1");
-            $stmt->execute([$role]);
-            $lastUserId = $stmt->fetchColumn();
-
-            if ($lastUserId && preg_match("/{$prefix}(\d+)/", $lastUserId, $matches)) {
-                $newNumber = str_pad($matches[1] + 1, 3, '0', STR_PAD_LEFT);
-            } else {
-                $newNumber = '001';
-            }
-
-            $newUserId = $prefix . $newNumber;
-
-            $stmt = $pdo->prepare("INSERT INTO users (public_id, username, email, password, role, full_name) VALUES (?, ?, ?, ?, ?, ?)");
-            $stmt->execute([$newUserId, $username, $email, $hashedPassword, $role, $full_name]);
+            $stmt = $pdo->prepare("INSERT INTO users (username, email, password, userType_Id) VALUES (?, ?, ?, ?)");
+            $stmt->execute([$username, $email, $hashedPassword, $role]);
 
             $userId = $pdo->lastInsertId();
-
-            if ($role === 'customer') {
-                $pdo->prepare("INSERT INTO customers (user_id) VALUES (?)")->execute([$userId]);
-            } elseif ($role === 'vendor') {
-                $pdo->prepare("INSERT INTO vendors (user_id) VALUES (?)")->execute([$userId]);
-            }
 
             header("Location: login_customer_vendor.php");
             exit();
@@ -161,11 +140,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
         <select name="role" required>
             <option value="">-- Select Role --</option>
-            <option value="customer" <?= (isset($role) && $role == 'customer') ? 'selected' : '' ?>>Customer</option>
-            <option value="vendor" <?= (isset($role) && $role == 'vendor') ? 'selected' : '' ?>>Vendor</option>
+            <option value=4 <?= (isset($role) && $role == 4) ? 'selected' : '' ?>>Customer</option>
+            <option value=3 <?= (isset($role) && $role == 3) ? 'selected' : '' ?>>Vendor</option>
         </select>
 
-        <input type="text" name="full_name" placeholder="Full Name" value="<?= htmlspecialchars($full_name ?? '') ?>" required>
         <input type="text" name="username" placeholder="Username" value="<?= htmlspecialchars($username ?? '') ?>" required>
         <input type="email" name="email" placeholder="Email" value="<?= htmlspecialchars($email ?? '') ?>" required>
 
