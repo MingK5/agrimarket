@@ -6,28 +6,28 @@ if (session_status() === PHP_SESSION_NONE) {
 // figure out whether to show the Analytics link
 $showAnalytics = false;
 if (isset($_SESSION['user'])) {
-    $role   = $_SESSION['user']['role'];
+    $userType_Id   = $_SESSION['user']['userType_Id'];
 
     // admins and staff always get it
-    if ($role === 'admin' || $role === 'staff') {
+    if ($userType_Id === 1 || $userType_Id === 2) {
         $showAnalytics = true;
     }
     // vendors only if premium
-    elseif ($role === 'vendor') {
+    elseif ($userType_Id === 3) {
         // adjust the path to your db.php as needed
-        require_once __DIR__ . '/db.php';
+        // require_once __DIR__ . '/db.php';
 
-        $stmt = $pdo->prepare("
-            SELECT subscription_tier
-              FROM vendors
-             WHERE user_id = ?
-        ");
-        $stmt->execute([ $_SESSION['user']['id'] ]);
-        $tier = $stmt->fetchColumn();
+        // $stmt = $pdo->prepare("
+        //     SELECT subscription_tier
+        //       FROM vendors
+        //      WHERE user_id = ?
+        // ");
+        // $stmt->execute([ $_SESSION['user']['id'] ]);
+        // $tier = $stmt->fetchColumn();
 
-        if ($tier === 'premium') {
-            $showAnalytics = true;
-        }
+        // if ($tier === 'premium') {
+        //     $showAnalytics = true;
+        // }
     }
     // customers & guests leave as false
 }
@@ -100,18 +100,20 @@ if (isset($_SESSION['user'])) {
         <?php endif; ?>
 
         <?php if (isset($_SESSION['user'])): ?>
-            <?php if ($_SESSION['user']['role'] === 'customer'): ?>
-                <a href="/agrimarket/dashboard/customer_home.php">Dashboard</a>
-                <a href="/agrimarket/profile/edit_profile.php">My Profile</a>
-            <?php elseif ($_SESSION['user']['role'] === 'vendor'): ?>
-                <a href="/agrimarket/dashboard/vendor_home.php">Dashboard</a>
-                <a href="/agrimarket/profile/edit_profile.php">My Profile</a>
-            <?php elseif ($_SESSION['user']['role'] === 'admin'): ?>
+
+
+            <?php if ($_SESSION['user']['userType_Id'] === 1): ?>
                 <a href="/agrimarket/dashboard/admin_home.php">Dashboard</a>
                 <a href="/agrimarket/profile/edit_profile.php">Admin Panel</a>
-            <?php elseif ($_SESSION['user']['role'] === 'staff'): ?>
+            <?php elseif ($_SESSION['user']['userType_Id'] === 2): ?>
                 <a href="/agrimarket/dashboard/staff_home.php">Dashboard</a>
                 <a href="/agrimarket/profile/edit_profile.php">Staff Panel</a>
+            <?php elseif ($_SESSION['user']['userType_Id'] === 3): ?>
+                <a href="/agrimarket/dashboard/vendor_home.php">Dashboard</a>
+                <a href="/agrimarket/profile/edit_profile.php">My Profile</a>
+            <?php elseif ($_SESSION['user']['userType_Id'] === 4): ?>
+                <a href="/agrimarket/dashboard/customer_home.php">Dashboard</a>
+                <a href="/agrimarket/profile/edit_profile.php">My Profile</a>
             <?php endif; ?>
         <?php else: ?>
             <a href="/agrimarket/auth/login_customer_vendor.php">Login/Register</a>
@@ -126,7 +128,7 @@ if (isset($_SESSION['user'])) {
     <div class="header-right">
         <?php 
         if (isset($_SESSION['user'])) {
-            echo htmlspecialchars($_SESSION['user']['full_name']) . " (" . $_SESSION['user']['role'] . ")";
+            echo htmlspecialchars($_SESSION['user']['username']) . " (" . $_SESSION['user']['userType_Id'] . ")";
             echo ' | <a href="/agrimarket/auth/logout.php" style="color:red; margin-left:10px;">Logout</a>';
         }
         ?>

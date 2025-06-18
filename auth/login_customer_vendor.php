@@ -5,10 +5,10 @@ require '../includes/db.php';
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $email = $_POST['email'];
     $inputPassword = $_POST['password'];
-    $role = $_POST['active_role'];
+    $userType_Id = $_POST['active_role'];
 
-    $stmt = $pdo->prepare("SELECT * FROM users WHERE email = ? AND role = ?");
-    $stmt->execute([$email, $role]);
+    $stmt = $pdo->prepare("SELECT * FROM users WHERE email = ? AND userType_Id = ?");
+    $stmt->execute([$email, $userType_Id]);
     $user = $stmt->fetch();
 
     if ($user) {
@@ -18,9 +18,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         if ($hashedInput === $user['password']) {
             $_SESSION['user'] = $user;
-            if ($role === 'customer') {
+            if ($user['userType_Id'] === 4) {
                 header("Location: ../dashboard/customer_home.php");
-            } elseif ($role === 'vendor') {
+            } elseif ($user['userType_Id'] === 3) {
                 header("Location: ../dashboard/vendor_home.php");
             } else {
                 header("Location: ../unauthorized.php");
@@ -141,11 +141,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <h2 id="formTitle">Customer Login</h2>
 
         <div class="slider">
-            <button type="button" id="btn_customer" class="active" onclick="setRole('customer')">Customer</button>
-            <button type="button" id="btn_vendor" onclick="setRole('vendor')">Vendor</button>
+            <button type="button" id="btn_customer" class="active" onclick="setRole(4)">Customer</button>
+            <button type="button" id="btn_vendor" onclick="setRole(3)">Vendor</button>
         </div>
 
-        <input type="hidden" name="active_role" id="active_role" value="customer">
+        <input type="hidden" name="active_role" id="active_role" value=4>
         <input type="email" name="email" placeholder="Email" required>
 
         <div class="input-group">
@@ -172,14 +172,19 @@ function togglePassword(icon, inputId) {
     icon.src = isHidden ? '../assets/open_eye.png' : '../assets/close_eye.png';
 }
 
-function setRole(role) {
-    document.getElementById('active_role').value = role;
+function setRole(userType_Id) {
+    document.getElementById('active_role').value = userType_Id;
     document.getElementById('btn_customer').classList.remove('active');
     document.getElementById('btn_vendor').classList.remove('active');
-    document.getElementById('btn_' + role).classList.add('active');
-
-    const titleText = role.charAt(0).toUpperCase() + role.slice(1) + " Login";
-    document.getElementById('formTitle').textContent = titleText;
+    if (userType_Id === 3)
+    {
+        document.getElementById('btn_vendor').classList.add('active');
+        document.getElementById('formTitle').textContent = "Vendor Login";
+    } else 
+    {
+        document.getElementById('btn_customer').classList.add('active');
+        document.getElementById('formTitle').textContent = "Customer Login";
+    }
 }
 </script>
 </body>
