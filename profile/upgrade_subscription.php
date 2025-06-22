@@ -2,7 +2,11 @@
 session_start();
 require '../includes/db.php';
 
-if (!isset($_SESSION['user']) || $_SESSION['user']['role'] !== 'vendor') {
+// 1) Make sure the user is logged in AND is a vendor (userType_Id = 3)
+if (
+    !isset($_SESSION['user'])
+    || $_SESSION['user']['userType_Id'] != 3
+) {
     header("Location: ../index.php");
     exit();
 }
@@ -11,9 +15,17 @@ $id      = $_SESSION['user']['id'];
 $success = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    // Simulate payment success
-    $stmt = $pdo->prepare("UPDATE vendors SET subscription_tier = 'premium' WHERE user_id = ?");
+    // 2) Upgrade in the users table, not vendors
+    $stmt = $pdo->prepare("
+        UPDATE users
+           SET subscription_tier = 'premium'
+         WHERE id = ?
+    ");
     $stmt->execute([$id]);
+
+    // 3) Keep the session in sync
+    $_SESSION['user']['subscription_tier'] = 'premium';
+
     $success = "Your subscription has been upgraded to Premium – enjoy unlimited Analytics access!";
 }
 ?>
@@ -84,7 +96,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </table>
 
     <?php if ($success): ?>
-      <p class="success"><?= $success ?></p>
+      <p class="success"><?= htmlspecialchars($success) ?></p>
       <p><a href="/agrimarket/analytics/analytics.php">Go to Analytics &raquo;</a></p>
       <p><a href="edit_profile.php">Return to Profile &raquo;</a></p>
     <?php else: ?>

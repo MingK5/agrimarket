@@ -3,6 +3,19 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
+$roleMap = [
+    1 => 'Admin',
+    2 => 'Staff',
+    3 => 'Vendor',
+    4 => 'Customer'
+];
+
+$roleName = '';
+if (isset($_SESSION['user'])) {
+    $type = $_SESSION['user']['userType_Id'];
+    $roleName = $roleMap[$type] ?? '';
+}
+
 // figure out whether to show the Analytics link
 $showAnalytics = false;
 if (isset($_SESSION['user'])) {
@@ -124,11 +137,12 @@ if (isset($_SESSION['user'])) {
 
     <!-- Right: User Info -->
     <div class="header-right">
-        <?php 
-        if (isset($_SESSION['user'])) {
-            echo htmlspecialchars($_SESSION['user']['username']) . " (" . $_SESSION['user']['userType_Id'] . ")";
-            echo ' | <a href="/agrimarket/auth/logout.php" style="color:red; margin-left:10px;">Logout</a>';
-        }
-        ?>
+    <?php 
+      if (isset($_SESSION['user'])) {
+          echo htmlspecialchars($_SESSION['user']['username'])
+             . " (" . htmlspecialchars($roleName) . ")"
+             . ' | <a href="/agrimarket/auth/logout.php" style="color:red; margin-left:10px;">Logout</a>';
+      }
+    ?>
     </div>
 </header>
