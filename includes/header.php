@@ -104,7 +104,7 @@ if (isset($_SESSION['user'])) {
     <!-- Center: Nav -->
     <div class="header-center">
         <a href="/agrimarket/index.php">Home</a>
-        <a href="/agrimarket/product/product.php">Products</a>
+        <a href="/agrimarket/product/product_listing.php">Products</a>
 
         <?php if ($showAnalytics): ?>
             <a href="/agrimarket/analytics/analytics.php">Analytics</a>

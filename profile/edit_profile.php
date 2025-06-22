@@ -237,12 +237,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <label>Service Listings (select at least 1)</label>
         <select id="service_select" onchange="addService()">
           <option value="">-- Select a service --</option>
-          <option value="Livestock">Livestock</option>
+          <option value="Farm Inputs">Farm Inputs</option>
+          <option value="Fish Farming & Aquaculture">Fish Farming & Aquaculture</option>
+          <option value="Miscellaneous Farm Products">Miscellaneous Farm Products</option>
+          <option value="Dairy Products">Dairy Products</option>
+          <option value="Edible Forestry Products">Edible Forestry Products</option>
           <option value="Crops">Crops</option>
-          <option value="Forestry">Forestry</option>
-          <option value="Dairy">Dairy</option>
-          <option value="Fish farming">Fish farming</option>
-          <option value="Miscellaneous">Miscellaneous</option>
+          <option value="Livestock">Livestock</option>
         </select>
         <div id="tag_container">
           <?php foreach ($serviceArray as $svc): ?>
