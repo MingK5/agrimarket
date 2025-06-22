@@ -1,12 +1,12 @@
 <?php
 require '../includes/session.php';
-checkLogin('customer');
+checkLogin(4);
 
 include '../includes/header.php';
 ?>
 
 <div style="padding: 40px;">
-    <h1>Welcome, <?= htmlspecialchars($_SESSION['user']['full_name']) ?>!</h1>
+    <h1>Welcome, <?= htmlspecialchars($_SESSION['user']['username']) ?>!</h1>
     <h3>Customer Dashboard</h3>
     <ul>
         <li><a href="/agrimarket/product/product.php">Browse Products</a></li>

@@ -6,7 +6,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $email = $_POST['email'];
     $inputPassword = $_POST['password'];
 
-    $stmt = $pdo->prepare("SELECT * FROM users WHERE email = ? AND (role = 'admin' OR role = 'staff')");
+    $stmt = $pdo->prepare("SELECT * FROM users WHERE email = ? AND (userType_Id = 1 OR userType_Id = 2)");
     $stmt->execute([$email]);
     $user = $stmt->fetch();
 
@@ -18,9 +18,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         if ($hashedInput === $user['password']) {
             $_SESSION['user'] = $user;
 
-            if ($user['role'] === 'admin') {
+            if ($user['userType_Id'] === 1) {
                 header("Location: ../dashboard/admin_home.php");
-            } elseif ($user['role'] === 'staff') {
+            } elseif ($user['userType_Id'] === 2) {
                 header("Location: ../dashboard/staff_home.php");
             } else {
                 header("Location: ../unauthorized.php");
