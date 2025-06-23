@@ -26,7 +26,7 @@ $packagingToUnit = [
     'Box' => 'piece',
     'Piece' => 'piece',
     'Tray' => 'dozen',
-    'Jar' => 'kg', // Adjust to 'liter' for liquids like yogurt if needed
+    'Jar' => 'kg',
     'Cup' => 'liter',
     'Pack' => 'kg',
     'Wheel' => 'kg',
@@ -121,17 +121,18 @@ $descriptions = [
         button:hover { background-color: #2d6f2d; }
         a { display: inline-block; margin-top: 20px; padding: 10px 20px; background: #ddd; color: #333; text-decoration: none; border-radius: 5px; }
         a:hover { background: #ccc; }
+        .alert { color: red; font-weight: bold; margin: 10px 0; }
         /* Header styling to match Product Listing page */
         nav {
             display: flex;
             justify-content: space-between;
             align-items: center;
             padding: 10px 20px;
-            background-color: #fff; /* No grey box, match Product Listing's clean look */
+            background-color: #fff;
             border-bottom: 1px solid #ddd;
         }
         nav .logo img {
-            height: 40px; /* Adjust based on your logo size */
+            height: 40px;
         }
         nav ul {
             list-style: none;
@@ -163,6 +164,10 @@ $descriptions = [
         <h2><?php echo htmlspecialchars($product['name']); ?></h2>
         <p><strong>Description:</strong> <?php echo htmlspecialchars($descriptions[$product['name']] ?? $product['description']); ?></p>
         <p><strong>Price:</strong> RM<?php echo htmlspecialchars($product['price']); ?>/<?php echo $unit; ?></p>
+        <p><strong>Current Stock Level:</strong> <?php echo htmlspecialchars($product['quantity']); ?> <?php echo $unit; ?></p>
+        <?php if ($userType == 3 && $product['vendor_id'] == $vendorId && $product['quantity'] < $product['reorder_level']): ?>
+            <p class="alert">Low Stock Alert: Stock level is below reorder level (<?php echo htmlspecialchars($product['reorder_level']); ?> <?php echo $unit; ?>). Please restock soon!</p>
+        <?php endif; ?>
         <?php if ($_SESSION['user']['userType_Id'] == 4): ?>
             <div class="quantity">
                 <label for="quantity">Quantity:</label>
@@ -174,6 +179,9 @@ $descriptions = [
             </form>
         <?php endif; ?>
         <a href="product.php">Back to Listing</a>
+        <?php if ($userType == 3 && $product['vendor_id'] == $vendorId): ?>
+            <a href="edit_product.php?id=<?php echo htmlspecialchars($product['id']); ?>" style="background-color: #ffa500; color: #fff; margin-left: 10px;">Edit Product Details</a>
+        <?php endif; ?>
     </div>
 
     <?php include '../includes/footer.php'; ?>

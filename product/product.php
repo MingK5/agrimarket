@@ -71,17 +71,7 @@ $packagingToUnit = [
 ];
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST' && $userType == 3) {
-    if (isset($_POST['bulk_upload'])) {
-        $data = $_POST['bulk_data'];
-        $rows = explode("\n", $data);
-        foreach ($rows as $row) {
-            $cols = str_getcsv($row);
-            if (count($cols) >= 6 && in_array($cols[3], $allowedCategories)) {
-                $stmt = $pdo->prepare("INSERT INTO product (name, description, price, category, vendor_id, quantity, image) VALUES (?, ?, ?, ?, ?, ?, ?)");
-                $stmt->execute([$cols[0], $cols[1], $cols[2], $cols[3], $vendorId, $cols[4], $cols[5]]);
-            }
-        }
-    } elseif (isset($_POST['update_quantity'])) {
+    if (isset($_POST['update_quantity'])) {
         $productId = $_POST['product_id'];
         $quantity = $_POST['quantity'];
         $stmt = $pdo->prepare("UPDATE product SET quantity = ? WHERE id = ? AND vendor_id = ?");
@@ -117,16 +107,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && $userType == 3) {
             </a>
         <?php endif; ?>
     </div>
-
-    <?php if ($userType == 3): ?>
-        <div class="bulk-upload" style="padding: 0 20px;">
-            <h3>Bulk Upload</h3>
-            <form method="POST">
-                <textarea name="bulk_data" rows="5" cols="50" placeholder="name,description,price,category,quantity,image (one per line)"></textarea>
-                <button type="submit" name="bulk_upload">Upload</button>
-            </form>
-        </div>
-    <?php endif; ?>
 
     <div class="filter">
         <label for="category">Filter by Category:</label>

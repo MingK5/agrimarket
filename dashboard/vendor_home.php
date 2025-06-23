@@ -10,7 +10,7 @@ include '../includes/header.php';
     <h3>Vendor Dashboard</h3>
     <ul>
         <li><a href="/agrimarket/product/product_upload.php">Upload Product</a></li>
-        <li><a href="/agrimarket/vendor_orders.php">View Orders</a></li>
+        <li><a href="/agrimarket/product/vendor_orders.php">View Orders</a></li>
         <li><a href="/agrimarket/profile/edit_profile.php">Edit Profile</a></li>
     </ul>
 </div>

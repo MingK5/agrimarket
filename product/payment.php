@@ -17,13 +17,17 @@ foreach ($cart as $item) {
     $itemNames[] = $item['name'] . " x" . $item['cart_quantity'];
 }
 
+// Determine vendor_id from the first item in the cart
+$vendorId = $cart[array_key_first($cart)]['vendor_id'];
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $paymentMethod = $_POST['payment_method'] ?? '';
     $address = $_SESSION['user']['address'] ?? 'N/A';
 
-    $stmt = $pdo->prepare("INSERT INTO sales_order (customer_id, item_description, status, amount, delivery_address, payment_method, created_date) VALUES (?, ?, ?, ?, ?, ?, NOW())");
+    $stmt = $pdo->prepare("INSERT INTO sales_order (customer_id, vendor_id, item_description, status, amount, delivery_address, payment_method, created_date) VALUES (?, ?, ?, ?, ?, ?, ?, NOW())");
     $stmt->execute([
         $customerId,
+        $vendorId,
         implode("; ", $itemNames),
         'Confirmed',
         $total,
