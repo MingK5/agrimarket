@@ -16,6 +16,13 @@ if (isset($_SESSION['user'])) {
     $roleName = $roleMap[$type] ?? '';
 }
 
+// new: compute unread notification counts
+  $unreadActivities = 0;
+  $unreadPromotions = 0;
+  if (isset($_SESSION['user'])) {
+      include __DIR__ . '/notification_count.php';
+  }
+
 // figure out whether to show the Analytics link
 $showAnalytics = false;
 if (isset($_SESSION['user'])) {
@@ -43,6 +50,23 @@ if (isset($_SESSION['user'])) {
     }
 }
 ?>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  fetch('/agrimarket/includes/notification_count.php?ajax=1')
+    .then(res => res.json())
+    .then(data => {
+      if ((data.unreadActivities ?? 0) + (data.unreadPromotions ?? 0) > 0) {
+        const notifLink = document.querySelector('a[href="/agrimarket/notification/notification.php"]');
+        if (notifLink && !notifLink.querySelector('.red-dot')) {
+          const dot = document.createElement('span');
+          dot.className = 'red-dot';
+          notifLink.appendChild(dot);
+        }
+      }
+    });
+});
+</script>
 
 <style>
     body {
@@ -91,6 +115,16 @@ if (isset($_SESSION['user'])) {
         color: #444;
         white-space: nowrap;
     }
+
+    .red-dot {
+        display: inline-block;
+        width: 8px;
+        height: 8px;
+        background: red;
+        border-radius: 50%;
+        margin-left: 4px;
+        vertical-align: middle;
+    }
 </style>
 
 <header>
@@ -130,8 +164,14 @@ if (isset($_SESSION['user'])) {
             <a href="/agrimarket/auth/login_customer_vendor.php">Login/Register</a>
         <?php endif; ?>
 
-        <?php if (isset($_SESSION['user'])): ?>
-            <a href="/agrimarket/notification/notification.php">Notifications</a>
+        <!-- only show Notifications for vendor (3) or customer (4) -->
+        <?php if (isset($_SESSION['user']) && in_array($_SESSION['user']['userType_Id'], [3,4], true)): ?>
+          <a href="/agrimarket/notification/notification.php">
+            Notifications
+            <?php if ($unreadActivities + $unreadPromotions > 0): ?>
+              <span class="red-dot"></span>
+            <?php endif; ?>
+          </a>
         <?php endif; ?>
     </div>
 

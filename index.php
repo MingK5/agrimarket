@@ -5,7 +5,7 @@
         background-image: url('assets/farm.jpeg');
         background-size: cover;
         background-position: center;
-        height: 550px;
+        height: 700px;
         display: flex;
         align-items: center;
         justify-content: center;

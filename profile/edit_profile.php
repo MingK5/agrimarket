@@ -27,21 +27,6 @@ $stmt = $pdo->prepare("SELECT * FROM users WHERE id = ?");
 $stmt->execute([$id]);
 $userData = $stmt->fetch();
 
-// ——— parse saved_preferences into an array for the form ———
-$prefs = [
-  'dark_mode'     => 'false',
-  'language'      => 'en',
-  'notifications' => 'enabled',
-  'theme'         => 'light',
-];
-if (!empty($userData['saved_preferences'])) {
-  foreach (explode(';', $userData['saved_preferences']) as $pair) {
-    list($k, $v) = explode('=', $pair) + [null,null];
-    if (isset($prefs[$k])) {
-      $prefs[$k] = $v;
-    }
-  }
-}
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // --- 1) common user fields ---
@@ -112,31 +97,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $successMessage = "Profile updated successfully.";
             }
         }
-        // --- 3) customer-specific ---
-        elseif ($role === 'customer') {
-            // rebuild the semicolon‐string from individual inputs
-            $darkMode      = isset($_POST['dark_mode'])   ? 'true'      : 'false';
-            $language      = $_POST['language']     ?? 'en';
-            $notifications = $_POST['notifications']?? 'disabled';
-            $theme         = $_POST['theme']         ?? 'light';
-
-            $newPrefs = sprintf(
-              "dark_mode=%s;language=%s;notifications=%s;theme=%s",
-              $darkMode,
-              $language,
-              $notifications,
-              $theme
-            );
-
-            $stmt = $pdo->prepare("
-                UPDATE users
-                   SET saved_preferences = ?
-                 WHERE id = ?
-            ");
-            $stmt->execute([$newPrefs, $id]);
-            $successMessage = "Profile updated successfully.";
-        }
-
         if (!$errorMessage && $successMessage === "") {
             $successMessage = "Profile updated successfully.";
         }
@@ -168,7 +128,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       .tag { display: inline-flex; align-items: center; background-color: #2e7d32; color: #fff; padding: 4px 10px; margin: 2px; border-radius: 12px; font-size: 13px; line-height: 1; }
       .tag span { margin-left: 8px; cursor: pointer; font-weight: bold; }
       .tag span:hover { color: #ddd; }
-      input[type="checkbox"] { width: auto; margin-left: 8px; vertical-align: middle; }
+      .hint { color: #555; font-style: italic; font-size: 13px; margin-top: 4px; }
       hr { border: none; border-top: 1px solid #ccc; margin: 20px 0; }
     </style>
 </head>
@@ -207,7 +167,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         value="<?= htmlspecialchars($userData['phone']) ?>"
         required
       >
-      <p style="color:red; font-size:13px;">
+      <p class="hint">
         Only numbers. Must start with <code>01</code> (e.g. <code>0123456789</code>), not country code <code>60</code>.
       </p>
     </div>
@@ -231,16 +191,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <label>Bank Account No</label>
         <input type="text" name="bank_account" pattern="\d+" maxlength="30"
                value="<?= htmlspecialchars($userData['bank_account']) ?>" required>
-        <p style="color:red; font-size:13px;">Only numbers are allowed.</p>
+        <p class="hint">Only numbers are allowed.</p>
       </div>
       <div class="form-group">
         <label>Service Listings (select at least 1)</label>
         <select id="service_select" onchange="addService()">
           <option value="">-- Select a service --</option>
-          <option value="Farm Inputs">Farm Inputs</option>
-          <option value="Fish Farming & Aquaculture">Fish Farming & Aquaculture</option>
-          <option value="Miscellaneous Farm Products">Miscellaneous Farm Products</option>
-          <option value="Dairy Products">Dairy Products</option>
+          <option value="Fish Farming">Fish Farming</option>
+          <option value="Miscellaneous Products">Miscellaneous Products</option>
+          <option value="Dairy">Dairy</option>
           <option value="Edible Forestry Products">Edible Forestry Products</option>
           <option value="Crops">Crops</option>
           <option value="Livestock">Livestock</option>
@@ -255,7 +214,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         </div>
         <input type="hidden" name="service_listings" id="service_listings"
                value="<?= htmlspecialchars(implode(',', $serviceArray)) ?>">
-        <p style="color:red; font-size:13px;">You must select at least 1.</p>
+        <p class="hint">You must select at least 1.</p>
       </div>
       <div class="form-group">
         <label>Subscription Tier</label>
@@ -267,41 +226,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             Upgrade to Premium
           </a></p>
         <?php endif; ?>
-      </div>
-    <?php endif; ?>
-
-    <!-- customer section — now with individual controls -->
-    <?php if ($role === 'customer'): ?>
-      <div class="form-group">
-        <label for="dark_mode">Dark Mode</label>
-        <input
-          id="dark_mode"
-          type="checkbox"
-          name="dark_mode"
-          value="true"
-          <?= $prefs['dark_mode']==='true' ? 'checked':'' ?>
-        >
-      </div>
-      <div class="form-group">
-        <label>Language</label>
-        <select name="language">
-          <option value="en" <?= $prefs['language']==='en'?'selected':'' ?>>English</option>
-          <option value="ms" <?= $prefs['language']==='ms'?'selected':'' ?>>Malay</option>
-        </select>
-      </div>
-      <div class="form-group">
-        <label>Notifications</label>
-        <select name="notifications">
-          <option value="enabled"  <?= $prefs['notifications']==='enabled'?'selected':'' ?>>Enabled</option>
-          <option value="disabled" <?= $prefs['notifications']==='disabled'?'selected':'' ?>>Disabled</option>
-        </select>
-      </div>
-      <div class="form-group">
-        <label>Theme</label>
-        <select name="theme">
-          <option value="light" <?= $prefs['theme']==='light'?'selected':'' ?>>Light</option>
-          <option value="dark"  <?= $prefs['theme']==='dark'?'selected':'' ?>>Dark</option>
-        </select>
       </div>
     <?php endif; ?>
 
