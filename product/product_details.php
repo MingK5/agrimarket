@@ -16,7 +16,7 @@ $stmt->execute([$productId]);
 $product = $stmt->fetch();
 
 if (!$product) {
-    header("Location: product_listing.php");
+    header("Location: product.php");
     exit();
 }
 
@@ -42,8 +42,6 @@ $packagingToUnit = [
 $unit = $packagingToUnit[$product['packaging']] ?? 'piece';
 
 $descriptions = [
-    'Chemical Fertilizers' => 'High-quality chemical fertilizers designed to boost crop yield, rich in nitrogen, phosphorus, and potassium. Price: RM' . $product['price'] . '/' . $unit . '. Ideal for large-scale farming, ensuring robust plant growth.',
-    'Organic Fertilizers' => 'Eco-friendly organic fertilizers made from natural compost and manure. Price: RM' . $product['price'] . '/' . $unit . '. Perfect for sustainable agriculture, promoting soil health.',
     'Aquaculture Feed' => 'Premium feed formulated for aquaculture fish, packed with essential nutrients. Price: RM' . $product['price'] . '/' . $unit . '. Enhances fish growth and health in farming environments.',
     'Prawns' => 'Fresh prawns harvested from sustainable aquaculture farms. Price: RM' . $product['price'] . '/' . $unit . '. Known for their succulent taste, great for gourmet dishes.',
     'Catfish' => 'Fresh catfish caught from clean waters. Price: RM' . $product['price'] . '/' . $unit . '. A versatile fish, perfect for frying or grilling.',
@@ -175,7 +173,7 @@ $descriptions = [
                 <button type="submit">Add to Cart</button>
             </form>
         <?php endif; ?>
-        <a href="product_listing.php">Back to Listing</a>
+        <a href="product.php">Back to Listing</a>
     </div>
 
     <?php include '../includes/footer.php'; ?>

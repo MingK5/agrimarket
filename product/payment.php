@@ -2,30 +2,37 @@
 session_start();
 require '../includes/db.php';
 
-if ($_SESSION['user']['userType_Id'] != 4 || !isset($_SESSION['cart'])) {
+if ($_SESSION['user']['userType_Id'] != 4 || empty($_SESSION['cart'])) {
     header("Location: ../index.php");
     exit();
 }
 
+$cart = $_SESSION['cart'];
+$customerId = $_SESSION['user']['id'];
 $total = 0;
-foreach ($_SESSION['cart'] as $item) {
-    $total += $item['price'];
+$itemNames = [];
+
+foreach ($cart as $item) {
+    $total += $item['price'] * $item['cart_quantity'];
+    $itemNames[] = $item['name'] . " x" . $item['cart_quantity'];
 }
 
-if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    $paymentMethod = $_POST['payment_method'];
-    $orderData = [
-        'customer_id' => $_SESSION['user']['id'],
-        'item_description' => json_encode(array_keys($_SESSION['cart'])),
-        'amount' => $total,
-        'delivery_address' => $_SESSION['user']['address'],
-        'payment_method' => $paymentMethod,
-        'created_date' => date('Y-m-d H:i:s')
-    ];
-    $stmt = $pdo->prepare("INSERT INTO sales_order (customer_id, item_description, amount, delivery_address, payment_method, created_date) VALUES (?, ?, ?, ?, ?, ?)");
-    $stmt->execute(array_values($orderData));
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $paymentMethod = $_POST['payment_method'] ?? '';
+    $address = $_SESSION['user']['address'] ?? 'N/A';
+
+    $stmt = $pdo->prepare("INSERT INTO sales_order (customer_id, item_description, status, amount, delivery_address, payment_method, created_date) VALUES (?, ?, ?, ?, ?, ?, NOW())");
+    $stmt->execute([
+        $customerId,
+        implode("; ", $itemNames),
+        'Confirmed',
+        $total,
+        $address,
+        $paymentMethod
+    ]);
+
     unset($_SESSION['cart']);
-    header("Location: order_history.php")
+    header("Location: customer_orders.php");
     exit();
 }
 ?>
@@ -35,23 +42,24 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 <head>
     <title>Payment</title>
     <style>
-        .payment { padding: 20px; max-width: 600px; margin: 0 auto; }
+        .payment-container { max-width: 500px; margin: 40px auto; background: #fff; padding: 20px; border-radius: 10px; }
+        .btn { padding: 10px 15px; background: #2d6f2d; color: white; border: none; border-radius: 5px; margin-top: 15px; }
     </style>
 </head>
 <body>
-    <div class="payment">
-        <h2>Payment</h2>
-        <p>Total: RM<?php echo $total; ?></p>
-        <form method="POST">
-            <label>Payment Method:</label>
-            <select name="payment_method" required>
-                <option value="credit_card">Credit/Debit Card</option>
-                <option value="mobile_payment">Mobile Payment</option>
-                <option value="bank_transfer">Bank Transfer</option>
-            </select>
-            <button type="submit">Pay Now</button>
-        </form>
-        <a href="shopping_cart.php">Back to Cart</a>
-    </div>
+<?php include '../includes/header.php'; ?>
+<div class="payment-container">
+    <h2>Payment</h2>
+    <p>Total Amount: RM<?= number_format($total, 2) ?></p>
+    <form method="POST">
+        <label>Choose Payment Method:</label>
+        <select name="payment_method" required>
+            <option value="Credit Card">Credit Card</option>
+            <option value="Mobile Payment">Mobile Payment</option>
+            <option value="Bank Transfer">Bank Transfer</option>
+        </select><br>
+        <button type="submit" class="btn">Pay Now</button>
+    </form>
+</div>
 </body>
 </html>

@@ -101,16 +101,25 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && $userType == 3) {
         .product-item p { margin: 2px 0; font-size: 14px; }
         .btn { padding: 5px 10px; margin: 5px; }
         .bulk-upload { margin-top: 20px; }
-        .filter { margin-bottom: 20px; }
+        .filter { margin-bottom: 20px; padding: 0 20px; }
         .filter select { padding: 5px; font-size: 14px; }
     </style>
 </head>
 <body>
     <?php include '../includes/header.php'; ?>
 
-    <h2>Product Listing</h2>
+    <!-- Product title + Shopping Cart in same row -->
+    <div style="display: flex; justify-content: space-between; align-items: center; padding: 0 20px;">
+        <h2 style="margin: 0;">Product Listing</h2>
+        <?php if ($userType == 4): ?>
+            <a href="shopping_cart.php">
+                <img src="/agrimarket/assets/Shopping Cart.jpg" alt="Shopping Cart" style="height: 40px; cursor: pointer;">
+            </a>
+        <?php endif; ?>
+    </div>
+
     <?php if ($userType == 3): ?>
-        <div class="bulk-upload">
+        <div class="bulk-upload" style="padding: 0 20px;">
             <h3>Bulk Upload</h3>
             <form method="POST">
                 <textarea name="bulk_data" rows="5" cols="50" placeholder="name,description,price,category,quantity,image (one per line)"></textarea>
@@ -118,6 +127,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && $userType == 3) {
             </form>
         </div>
     <?php endif; ?>
+
     <div class="filter">
         <label for="category">Filter by Category:</label>
         <select name="category" id="category" onchange="window.location.href='?category=' + encodeURIComponent(this.value)">
@@ -129,6 +139,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && $userType == 3) {
             <?php endforeach; ?>
         </select>
     </div>
+
     <div class="product-list">
         <?php if (empty($products)): ?>
             <p>No products found.</p>
