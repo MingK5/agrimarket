@@ -32,15 +32,16 @@ if ($userType_Id === 4) {
        ORDER BY delivered_date DESC
     ");
     $stmt->execute([$userId]);
-} else {
-    // vendor/staff/admin: all delivered orders
+} elseif ($userType_Id === 3) {
+    // vendor: only their delivered orders
     $stmt = $pdo->prepare("
       SELECT id, item_description, delivered_date
         FROM sales_order
-       WHERE delivered_date IS NOT NULL
+       WHERE vendor_id = ?
+         AND delivered_date IS NOT NULL
        ORDER BY delivered_date DESC
     ");
-    $stmt->execute();
+    $stmt->execute([$userId]);
 }
 while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
     $key = "order_{$row['id']}";

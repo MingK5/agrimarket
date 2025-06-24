@@ -19,8 +19,9 @@ $promotionKeys = [];
 if ($userType_Id === 4) {
     $stmt = $pdo->prepare("SELECT id FROM sales_order WHERE customer_id = ? AND delivered_date IS NOT NULL");
     $stmt->execute([$userId]);
-} else {
-    $stmt = $pdo->query("SELECT id FROM sales_order WHERE delivered_date IS NOT NULL");
+} elseif ($userType_Id === 3) {
+    $stmt = $pdo->prepare("SELECT id FROM sales_order WHERE vendor_id = ? AND delivered_date IS NOT NULL");
+    $stmt->execute([$userId]);
 }
 while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
     $activityKeys[] = "order_{$row['id']}";
@@ -28,7 +29,7 @@ while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
 
 // Low Stock for Vendor
 if ($userType_Id === 3) {
-    $stmt = $pdo->prepare("SELECT id FROM product WHERE vendor_id = ? AND quantity < reorder_level");
+    $stmt = $pdo->prepare("SELECT id FROM product WHERE vendor_id = ? AND quantity <= reorder_level");
     $stmt->execute([$userId]);
     while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
         $activityKeys[] = "stock_{$row['id']}";
