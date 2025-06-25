@@ -20,6 +20,14 @@ if (!$product) {
     exit();
 }
 
+$isBookmarked = false;
+if ($userType == 4) {
+    $userId = $_SESSION['user']['id'];
+    $stmt = $pdo->prepare("SELECT * FROM bookmark WHERE customer_id = ? AND product_id = ?");
+    $stmt->execute([$userId, $productId]);
+    $isBookmarked = $stmt->fetch() !== false;
+}
+
 // Map packaging to units
 $packagingToUnit = [
     'Bag' => 'kg',
@@ -173,9 +181,16 @@ $descriptions = [
                 <label for="quantity">Quantity:</label>
                 <input type="number" id="quantity" name="quantity" value="1" min="1" max="<?php echo htmlspecialchars($product['quantity']); ?>">
             </div>
-            <form method="POST" action="shopping_cart.php">
+            <form method="POST" action="shopping_cart.php" style="display: inline;">
                 <input type="hidden" name="product_id" value="<?php echo $product['id']; ?>">
                 <button type="submit">Add to Cart</button>
+            </form>
+            <form method="POST" action="bookmark.php" style="display: inline;">
+                <input type="hidden" name="product_id" value="<?php echo $product['id']; ?>">
+                <input type="hidden" name="action" value="<?php echo $isBookmarked ? 'remove' : 'add'; ?>">
+                <button type="submit" style="background-color:#ffa500" class="<?php echo $isBookmarked ? 'remove-bookmark-button' : 'bookmark-button'; ?>">
+                    <?php echo $isBookmarked ? 'Remove from Bookmark' : 'Add to Bookmark'; ?>
+                </button>
             </form>
         <?php endif; ?>
         <a href="product.php">Back to Listing</a>

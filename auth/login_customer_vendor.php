@@ -19,9 +19,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if ($hashedInput === $user['password']) {
             $_SESSION['user'] = $user;
             if ($user['userType_Id'] === 4) {
-                header("Location: ../dashboard/customer_home.php");
+                header("Location: ../index.php");
             } elseif ($user['userType_Id'] === 3) {
-                header("Location: ../dashboard/vendor_home.php");
+                header("Location: ../index.php");
             } else {
                 header("Location: ../unauthorized.php");
             }

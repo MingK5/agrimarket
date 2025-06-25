@@ -149,16 +149,17 @@ document.addEventListener('DOMContentLoaded', function () {
 
             <?php if ($_SESSION['user']['userType_Id'] === 1): ?>
                 <a href="/agrimarket/dashboard/admin_home.php">Dashboard</a>
-                <a href="/agrimarket/profile/edit_profile.php">Admin Panel</a>
+                <a href="/agrimarket/profile/edit_profile.php">Profile</a>
             <?php elseif ($_SESSION['user']['userType_Id'] === 2): ?>
                 <a href="/agrimarket/dashboard/staff_home.php">Dashboard</a>
-                <a href="/agrimarket/profile/edit_profile.php">Staff Panel</a>
+                <a href="/agrimarket/profile/edit_profile.php">Profile</a>
             <?php elseif ($_SESSION['user']['userType_Id'] === 3): ?>
-                <a href="/agrimarket/dashboard/vendor_home.php">Dashboard</a>
-                <a href="/agrimarket/profile/edit_profile.php">My Profile</a>
+                <a href="/agrimarket/product/product_upload.php">Bulk Upload</a>
+                <a href="/agrimarket/profile/edit_profile.php">Profile</a>
             <?php elseif ($_SESSION['user']['userType_Id'] === 4): ?>
-                <a href="/agrimarket/dashboard/customer_home.php">Dashboard</a>
-                <a href="/agrimarket/profile/edit_profile.php">My Profile</a>
+                <a href="/agrimarket/product/customer_orders.php">Orders</a>
+                <a href="/agrimarket/product/bookmark.php">Bookmarks</a>
+                <a href="/agrimarket/profile/edit_profile.php">Profile</a>
             <?php endif; ?>
         <?php else: ?>
             <a href="/agrimarket/auth/login_customer_vendor.php">Login/Register</a>

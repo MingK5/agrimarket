@@ -77,7 +77,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['submit_products'])) {
     <?php include '../includes/header.php'; ?>
 
     <div class="upload-container">
-        <h2>Upload Products</h2>
+        <h2>Bulk Upload Products</h2>
         <?php if (isset($_GET['success']) && $_GET['success'] == 1): ?>
             <p style="color: green;">Products uploaded successfully!</p>
         <?php endif; ?>

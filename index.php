@@ -37,12 +37,18 @@
 </style>
 
 <div class="hero-section">
-    <div class="welcome-box">
-        <h1>Welcome to AgriMarket Solutions</h1>
-        <p>
-            Your trusted digital marketplace for farmers and vendors. Discover, trade, and learn everything about agriculture—from livestock and crops to modern farming insights and analytics.
-        </p>
+    <div style="text-align:center; ">
+        <?php if (isset($_SESSION['user'])): ?>
+            <h1 style="height: 70px">Welcome, <?= htmlspecialchars($_SESSION['user']['username']) ?>!</h1>
+        <?php endif; ?>
+        <div class="welcome-box">
+            <h1>AgriMarket Solutions</h1>
+            <p>
+                Your trusted digital marketplace for farmers and vendors. Discover, trade, and learn everything about agriculture—from livestock and crops to modern farming insights and analytics.
+            </p>
+        </div>
     </div>
+
 </div>
 
 <?php include 'includes/footer.php'; ?>
