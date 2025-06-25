@@ -97,7 +97,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     <?php if ($success): ?>
       <p class="success"><?= htmlspecialchars($success) ?></p>
-      <p><a href="/agrimarket/analytics/analytics.php">Go to Analytics &raquo;</a></p>
+      <p><a href="/agrimarket/task/analytics.php">Go to Analytics &raquo;</a></p>
       <p><a href="edit_profile.php">Return to Profile &raquo;</a></p>
     <?php else: ?>
       <form method="POST">

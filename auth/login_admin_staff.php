@@ -19,9 +19,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $_SESSION['user'] = $user;
 
             if ($user['userType_Id'] === 1) {
-                header("Location: ../dashboard/admin_home.php");
+                header("Location: ../index.php");
             } elseif ($user['userType_Id'] === 2) {
-                header("Location: ../dashboard/staff_home.php");
+                header("Location: ../index.php");
             } else {
                 header("Location: ../unauthorized.php");
             }

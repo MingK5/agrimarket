@@ -141,17 +141,17 @@ document.addEventListener('DOMContentLoaded', function () {
         <a href="/agrimarket/product/product.php">Products</a>
 
         <?php if ($showAnalytics): ?>
-            <a href="/agrimarket/analytics/analytics.php">Analytics</a>
+            <a href="/agrimarket/task/analytics.php">Analytics</a>
         <?php endif; ?>
 
         <?php if (isset($_SESSION['user'])): ?>
 
 
             <?php if ($_SESSION['user']['userType_Id'] === 1): ?>
-                <a href="/agrimarket/dashboard/admin_home.php">Dashboard</a>
+                <a href="/agrimarket/task/task_assignment.php">Task Assignment</a>
+                <a href="/agrimarket/profile/staff_management.php">Staff Management</a>
                 <a href="/agrimarket/profile/edit_profile.php">Profile</a>
             <?php elseif ($_SESSION['user']['userType_Id'] === 2): ?>
-                <a href="/agrimarket/dashboard/staff_home.php">Dashboard</a>
                 <a href="/agrimarket/profile/edit_profile.php">Profile</a>
             <?php elseif ($_SESSION['user']['userType_Id'] === 3): ?>
                 <a href="/agrimarket/product/product_upload.php">Bulk Upload</a>
