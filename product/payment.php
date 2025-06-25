@@ -17,23 +17,25 @@ foreach ($cart as $item) {
     $itemNames[] = $item['name'] . " x" . $item['cart_quantity'];
 }
 
-// Determine vendor_id from the first item in the cart
-$vendorId = $cart[array_key_first($cart)]['vendor_id'];
-
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $paymentMethod = $_POST['payment_method'] ?? '';
     $address = $_SESSION['user']['address'] ?? 'N/A';
 
-    $stmt = $pdo->prepare("INSERT INTO sales_order (customer_id, vendor_id, item_description, status, amount, delivery_address, payment_method, created_date) VALUES (?, ?, ?, ?, ?, ?, ?, NOW())");
+    // Insert into sales_order
+    $stmt = $pdo->prepare("INSERT INTO sales_order (customer_id, item_description, status, amount, delivery_address, payment_method, created_date) VALUES (?, ?, 'Confirmed', ?, ?, ?, NOW())");
     $stmt->execute([
         $customerId,
-        $vendorId,
         implode("; ", $itemNames),
-        'Confirmed',
         $total,
         $address,
         $paymentMethod
     ]);
+
+    // ✅ Update order_count only if user is a customer (already guaranteed above)
+    foreach ($cart as $item) {
+        $updateOrder = $pdo->prepare("UPDATE product SET order_count = order_count + ? WHERE id = ?");
+        $updateOrder->execute([$item['cart_quantity'], $item['product_id']]);
+    }
 
     unset($_SESSION['cart']);
     header("Location: customer_orders.php");
