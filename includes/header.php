@@ -152,6 +152,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 <a href="/agrimarket/profile/staff_management.php">Staff Management</a>
                 <a href="/agrimarket/profile/edit_profile.php">Profile</a>
             <?php elseif ($_SESSION['user']['userType_Id'] === 2): ?>
+                <a href="/agrimarket/task/task_assignment.php">Task Assignment</a>
                 <a href="/agrimarket/profile/edit_profile.php">Profile</a>
             <?php elseif ($_SESSION['user']['userType_Id'] === 3): ?>
                 <a href="/agrimarket/product/product_upload.php">Bulk Upload</a>

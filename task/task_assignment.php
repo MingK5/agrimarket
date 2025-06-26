@@ -2,7 +2,7 @@
 session_start();
 require '../includes/db.php';
 
-if ($_SESSION['user']['userType_Id'] != 1) {
+if ($_SESSION['user']['userType_Id'] != 1 && $_SESSION['user']['userType_Id'] != 2) {
     header("Location: ../index.php");
     exit();
 }
@@ -56,10 +56,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['update_status'])) {
         .status-update select { padding: 5px; font-size: 14px; border-radius: 4px; }
         .status-update button { padding: 5px 10px; background-color: #2d6f2d; color: #fff; border: none; border-radius: 5px; cursor: pointer; }
         .status-update button:hover { background-color: #1a5c1a; }
-        .status-Confirmed { color: #FFA500; }
-        .status-Packed { color: #1E90FF; }
-        .status-Shipped { color: #9932CC; }
-        .status-Delivered { color: #228B22; }
+        .status-Confirmed { color: #3B82F6; }
+        .status-Packed { color: #EAB308; }
+        .status-Shipped { color: #F97316; }
+        .status-Delivered { color: #22C55E; }
         .pagination { margin-top: 20px; text-align: center; }
         .pagination a { margin: 0 5px; padding: 5px 10px; text-decoration: none; color: #2d6f2d; border: 1px solid #2d6f2d; border-radius: 4px; }
         .pagination a:hover { background-color: #2d6f2d; color: #fff; }

@@ -1,9 +1,13 @@
 <?php
-require '../includes/session.php';
 require '../includes/db.php';
-checkLogin(1); // Ensure only admins can access
 
 $error = '';
+
+if ($_SESSION['user']['userType_Id'] != 1) {
+    header("Location: ../index.php");
+    exit();
+}
+
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action']) && $_POST['action'] == 'delete') {
     $userId = $_POST['user_id'];
