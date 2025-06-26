@@ -70,8 +70,11 @@ document.addEventListener('DOMContentLoaded', function () {
 
 <style>
     body {
+        height:100%;
         margin: 0;
         font-family: 'Segoe UI', sans-serif;
+        display: flex;
+        flex-direction: column;
     }
 
     header {
@@ -138,7 +141,10 @@ document.addEventListener('DOMContentLoaded', function () {
     <!-- Center: Nav -->
     <div class="header-center">
         <a href="/agrimarket/index.php">Home</a>
-        <a href="/agrimarket/product/product.php">Products</a>
+        
+        <?php if (isset($_SESSION['user'])): ?>
+            <a href="/agrimarket/product/product.php">Products</a>
+        <?php endif; ?>
 
         <?php if ($showAnalytics): ?>
             <a href="/agrimarket/task/analytics.php">Analytics</a>
@@ -188,3 +194,5 @@ document.addEventListener('DOMContentLoaded', function () {
     ?>
     </div>
 </header>
+
+<main style="flex:1 0 auto">

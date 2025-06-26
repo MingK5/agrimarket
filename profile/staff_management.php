@@ -1,13 +1,13 @@
 <?php
+session_start();
 require '../includes/db.php';
-
-$error = '';
 
 if ($_SESSION['user']['userType_Id'] != 1) {
     header("Location: ../index.php");
     exit();
 }
 
+$error = '';
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action']) && $_POST['action'] == 'delete') {
     $userId = $_POST['user_id'];
@@ -120,6 +120,7 @@ include '../includes/header.php';
             font-size: 14px;
             box-sizing: border-box;
         }
+        
         .password-wrapper {
             position: relative;
         }
