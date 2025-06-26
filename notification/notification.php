@@ -32,27 +32,15 @@ if ($userType_Id === 4) {
        ORDER BY delivered_date DESC
     ");
     $stmt->execute([$userId]);
-} elseif ($userType_Id === 3) {
-    // vendor: only their delivered orders
-    $stmt = $pdo->prepare("
-      SELECT id, item_description, delivered_date
-        FROM sales_order
-       WHERE vendor_id = ?
-         AND delivered_date IS NOT NULL
-       ORDER BY delivered_date DESC
-    ");
-    $stmt->execute([$userId]);
-}
-while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
-    $key = "order_{$row['id']}";
-    $msg = $userType_Id === 4
-         ? "Your order #{$row['id']} has been delivered."
-         : "Order #{$row['id']} has been delivered.";
-    $activities[] = [
-      'key'     => $key,
-      'message' => $msg,
-      'time'    => $row['delivered_date']
-    ];
+
+    /* Build activity items */
+    while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+        $activities[] = [
+          'key'     => "order_{$row['id']}",
+          'message' => "Your order #{$row['id']} has been delivered.",
+          'time'    => $row['delivered_date']
+        ];
+    }
 }
 
 // — Low Stock Alerts (vendor only) —

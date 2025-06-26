@@ -31,37 +31,16 @@ $activityKeys   = [];
 $promotionKeys  = [];
 
 /* Delivered orders */
-if ($userType_Id === 4) {
-    // Customer
+if ($userType_Id === 4) {             // customers only
     $stmt = $pdo->prepare(
-        "SELECT id FROM sales_order 
+        "SELECT id FROM sales_order
          WHERE customer_id = ? AND delivered_date IS NOT NULL"
     );
     $stmt->execute([$userId]);
-} else { // Vendor - fetch all product names under vendor
-    $productStmt = $pdo->prepare("SELECT name FROM product WHERE vendor_id = ?");
-    $productStmt->execute([$userId]);
-    $productNames = $productStmt->fetchAll(PDO::FETCH_COLUMN);
 
-    if (!empty($productNames)) {
-        $likeConditions = [];
-        $params = [];
-        foreach ($productNames as $name) {
-            $likeConditions[] = "item_description LIKE ?";
-            $params[] = "%$name%";
-        }
-        $query = "SELECT id FROM sales_order WHERE delivered_date IS NOT NULL AND (" . implode(" OR ", $likeConditions) . ")";
-        $stmt = $pdo->prepare($query);
-        $stmt->execute($params);
-    } else {
-        $stmt = $pdo->prepare("SELECT id FROM sales_order WHERE 1=0"); // No products
-        $stmt->execute();
+    while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+        $activityKeys[] = "order_{$row['id']}";
     }
-}
-
-
-while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
-    $activityKeys[] = "order_{$row['id']}";
 }
 
 /* Low-stock alerts (vendor only) */
