@@ -18,7 +18,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         if ($hashedInput === $user['password']) {
             $_SESSION['user'] = $user;
+
+            // ✅ Fix: Load persistent cart correctly
             if ($user['userType_Id'] === 4) {
+                $cartStmt = $pdo->prepare("SELECT c.product_id, c.quantity AS cart_quantity, p.* 
+                                           FROM cart c JOIN product p ON c.product_id = p.id 
+                                           WHERE c.customer_id = ?");
+                $cartStmt->execute([$user['id']]);
+                $dbCart = $cartStmt->fetchAll(PDO::FETCH_ASSOC);
+
+                $_SESSION['cart'] = [];
+                foreach ($dbCart as $item) {
+                    $productId = $item['product_id'];
+                    $item['cart_quantity'] = $item['cart_quantity']; // ✅ Explicitly rename
+                    $_SESSION['cart'][$productId] = $item;
+                }
+
                 header("Location: ../index.php");
             } elseif ($user['userType_Id'] === 3) {
                 header("Location: ../index.php");

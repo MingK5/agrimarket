@@ -16,45 +16,76 @@ if (isset($_SESSION['cart'])) {
 }
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+    $customerId = $_SESSION['user']['id'];
+
     if (isset($_POST['product_id'])) {
         $productId = $_POST['product_id'];
         $stmt = $pdo->prepare("SELECT * FROM product WHERE id = ?");
         $stmt->execute([$productId]);
         $product = $stmt->fetch();
+
         if ($product && $product['quantity'] > 0) {
             if (!isset($cart[$productId])) {
                 $cart[$productId] = $product;
                 $cart[$productId]['cart_quantity'] = 1;
+                $cart[$productId]['quantity'] = $product['quantity']; // Ensure product stock is still available
+
+
+                // ✅ Insert new cart item into DB
+                $stmt = $pdo->prepare("INSERT INTO cart (customer_id, product_id, quantity) VALUES (?, ?, 1)
+                                       ON DUPLICATE KEY UPDATE quantity = quantity + 1");
+                $stmt->execute([$customerId, $productId]);
             } else {
                 $cart[$productId]['cart_quantity']++;
+
+                // ✅ Update quantity in DB
+                $stmt = $pdo->prepare("UPDATE cart SET quantity = quantity + 1 WHERE customer_id = ? AND product_id = ?");
+                $stmt->execute([$customerId, $productId]);
             }
+
             $_SESSION['cart'] = $cart;
+
             $stmt = $pdo->prepare("UPDATE product SET quantity = quantity - 1 WHERE id = ?");
             $stmt->execute([$productId]);
         }
     } elseif (isset($_POST['delete_id'])) {
         $deleteId = $_POST['delete_id'];
+
         if (isset($cart[$deleteId])) {
             $stmt = $pdo->prepare("UPDATE product SET quantity = quantity + ? WHERE id = ?");
             $stmt->execute([$cart[$deleteId]['cart_quantity'], $deleteId]);
+
+            // ✅ Delete from cart table
+            $stmt = $pdo->prepare("DELETE FROM cart WHERE customer_id = ? AND product_id = ?");
+            $stmt->execute([$customerId, $deleteId]);
+
             unset($cart[$deleteId]);
             $_SESSION['cart'] = $cart;
         }
     } elseif (isset($_POST['update_quantity'])) {
         $productId = $_POST['product_id'];
         $quantity = $_POST['quantity'];
+
         if (isset($cart[$productId]) && $quantity >= 0 && $quantity <= $cart[$productId]['quantity']) {
             $oldQuantity = $cart[$productId]['cart_quantity'];
             $diff = $quantity - $oldQuantity;
+
             $cart[$productId]['cart_quantity'] = $quantity;
             $_SESSION['cart'] = $cart;
-            $stmt = $pdo->prepare("UPDATE product SET quantity = quantity + ? WHERE id = ?");
-            $stmt->execute([-$diff, $productId]);
+
+            // ✅ Update cart table
+            $stmt = $pdo->prepare("UPDATE cart SET quantity = ? WHERE customer_id = ? AND product_id = ?");
+            $stmt->execute([$quantity, $customerId, $productId]);
+
+            $stmt = $pdo->prepare("UPDATE product SET quantity = quantity - ? WHERE id = ?");
+            $stmt->execute([$diff, $productId]);
         }
     }
+
     header("Location: shopping_cart.php");
     exit();
 }
+
 ?>
 
 <!DOCTYPE html>

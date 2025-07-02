@@ -31,11 +31,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $paymentMethod
     ]);
 
-    // ✅ Update order_count only if user is a customer (already guaranteed above)
     foreach ($cart as $item) {
         $updateOrder = $pdo->prepare("UPDATE product SET order_count = order_count + ? WHERE id = ?");
         $updateOrder->execute([$item['cart_quantity'], $item['product_id']]);
     }
+
+    // ✅ Clear cart from database
+    $stmt = $pdo->prepare("DELETE FROM cart WHERE customer_id = ?");
+    $stmt->execute([$customerId]);
 
     unset($_SESSION['cart']);
     header("Location: customer_orders.php");
