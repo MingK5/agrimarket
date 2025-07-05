@@ -2,7 +2,7 @@
 $host = 'localhost';
 $db = 'agrimarket';
 $user = 'agrimarket_user';
-$pass = 'agrimarket123'; // use your XAMPP password
+$pass = 'agrimarket123'; 
 
 try {
     $pdo = new PDO("mysql:host=$host;dbname=$db", $user, $pass);

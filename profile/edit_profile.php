@@ -62,7 +62,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         // --- 2) vendor-specific ---
         if ($role === 'vendor') {
-            // ... your existing vendor logic untouched ...
             $businessRegNo   = trim($_POST['business_reg_no']);
             $bankAccount     = trim($_POST['bank_account']);
             $listArr = array_filter(array_map('trim',
