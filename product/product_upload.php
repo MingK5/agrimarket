@@ -16,6 +16,25 @@ $stmt->execute([$vendorId]);
 $serviceListings = $stmt->fetchColumn();
 $allowedCategories = $serviceListings ? array_map('trim', explode(',', $serviceListings)) : [];
 
+$packagingToUnit = [
+    'Bag' => 'kg',
+    'Box' => 'piece',
+    'Piece' => 'piece',
+    'Tray' => 'dozen',
+    'Jar' => 'kg',
+    'Cup' => 'liter',
+    'Pack' => 'kg',
+    'Wheel' => 'kg',
+    'Bottle' => 'liter',
+    'Root' => 'kg',
+    'Punnet' => 'kg',
+    'Head' => 'piece',
+    'Bunch' => 'piece',
+    'Whole' => 'piece',
+    'Cage' => 'piece',
+    'Pen' => 'piece',
+];
+
 if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['submit_products'])) {
     $products = [];
     $errors = [];
@@ -26,12 +45,15 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['submit_products'])) {
         $category = trim($_POST['category'][$i]);
         $quantity = trim($_POST['quantity'][$i]);
         $reorder_level = trim($_POST['reorder_level'][$i]);
+        $packaging = trim($_POST['packaging'][$i]);
+        $packaging_quantity = trim($_POST['packaging_quantity'][$i]);
         $image = $_FILES['image']['name'][$i] ? $_FILES['image']['name'][$i] : null;
 
-        if ($name && $price && $category && $quantity && $reorder_level && in_array($category, $allowedCategories)) {
+        if ($name && $price && $category && $quantity && $reorder_level && $packaging && $packaging_quantity && in_array($category, $allowedCategories) && array_key_exists($packaging, $packagingToUnit) && $packaging_quantity > 0) {
             $price = floatval($price);
             $quantity = intval($quantity);
             $reorder_level = intval($reorder_level);
+            $packaging_quantity = floatval($packaging_quantity);
             $targetDir = "../assets/";
             $targetFile = $targetDir . basename($_FILES['image']['name'][$i]);
             $imageFileType = strtolower(pathinfo($targetFile, PATHINFO_EXTENSION));
@@ -40,15 +62,15 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['submit_products'])) {
                 $errors[] = "Only JPG, JPEG, PNG, and WEBP files are allowed for product $name.";
             } else {
                 if ($image && move_uploaded_file($_FILES['image']['tmp_name'][$i], $targetFile)) {
-                    $stmt = $pdo->prepare("INSERT INTO product (name, description, price, category, vendor_id, quantity, reorder_level, image) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
-                    $stmt->execute([$name, $description, $price, $category, $vendorId, $quantity, $reorder_level, $image]);
+                    $stmt = $pdo->prepare("INSERT INTO product (name, description, price, category, vendor_id, quantity, reorder_level, image, packaging, packaging_quantity) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+                    $stmt->execute([$name, $description, $price, $category, $vendorId, $quantity, $reorder_level, $image, $packaging, $packaging_quantity]);
                 } elseif (!$image) {
-                    $stmt = $pdo->prepare("INSERT INTO product (name, description, price, category, vendor_id, quantity, reorder_level) VALUES (?, ?, ?, ?, ?, ?, ?)");
-                    $stmt->execute([$name, $description, $price, $category, $vendorId, $quantity, $reorder_level]);
+                    $stmt = $pdo->prepare("INSERT INTO product (name, description, price, category, vendor_id, quantity, reorder_level, packaging, packaging_quantity) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
+                    $stmt->execute([$name, $description, $price, $category, $vendorId, $quantity, $reorder_level, $packaging, $packaging_quantity]);
                 }
             }
         } else {
-            $errors[] = "Missing or invalid data for product $name. Category must be one of: " . implode(", ", $allowedCategories);
+            $errors[] = "Missing or invalid data for product $name. Category must be one of: " . implode(", ", $allowedCategories) . "; Packaging must be valid; Packaging quantity must be positive.";
         }
     }
     if (empty($errors)) {
@@ -104,10 +126,19 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['submit_products'])) {
                             <option value="<?php echo htmlspecialchars($category); ?>"><?php echo htmlspecialchars($category); ?></option>
                         <?php endforeach; ?>
                     </select>
-                    <label for="quantity_0">Quantity:</label>
+                    <label for="quantity_0">Quantity (number of packages):</label>
                     <input type="number" name="quantity[]" id="quantity_0" min="1" required>
-                    <label for="reorder_level_0">Reorder Level:</label>
+                    <label for="reorder_level_0">Reorder Level (number of packages):</label>
                     <input type="number" name="reorder_level[]" id="reorder_level_0" min="0" required>
+                    <label for="packaging_0">Packaging:</label>
+                    <select name="packaging[]" id="packaging_0" required>
+                        <option value="">Select Packaging</option>
+                        <?php foreach ($packagingToUnit as $pack => $unit): ?>
+                            <option value="<?php echo htmlspecialchars($pack); ?>"><?php echo htmlspecialchars($pack); ?> (<?php echo $unit; ?>)</option>
+                        <?php endforeach; ?>
+                    </select>
+                    <label for="packaging_quantity_0">Quantity per Package (e.g., kg per Jar, pieces per Bunch):</label>
+                    <input type="number" name="packaging_quantity[]" id="packaging_quantity_0" step="0.01" min="0.01" required>
                     <label for="image_0">Image:</label>
                     <input type="file" name="image[]" id="image_0" accept=".jpg,.jpeg,.png,.webp">
                 </div>
@@ -123,7 +154,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['submit_products'])) {
         let formCount = 1;
         function addProductForm() {
             const container = document.getElementById('productForms');
-            const newForm = document.createElement('div');
+            const newFormGrade = document.createElement('div');
             newForm.className = 'product-form';
             newForm.innerHTML = `
                 <label for="name_${formCount}">Product Name:</label>
@@ -139,10 +170,19 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['submit_products'])) {
                         <option value="<?php echo htmlspecialchars($category); ?>"><?php echo htmlspecialchars($category); ?></option>
                     <?php endforeach; ?>
                 </select>
-                <label for="quantity_${formCount}">Quantity:</label>
+                <label for="quantity_${formCount}">Quantity (number of packages):</label>
                 <input type="number" name="quantity[]" id="quantity_${formCount}" min="1" required>
-                <label for="reorder_level_${formCount}">Reorder Level:</label>
+                <label for="reorder_level_${formCount}">Reorder Level (number of packages):</label>
                 <input type="number" name="reorder_level[]" id="reorder_level_${formCount}" min="0" required>
+                <label for="packaging_${formCount}">Packaging:</label>
+                <select name="packaging[]" id="packaging_${formCount}" required>
+                    <option value="">Select Packaging</option>
+                    <?php foreach ($packagingToUnit as $pack => $unit): ?>
+                        <option value="<?php echo htmlspecialchars($pack); ?>"><?php echo htmlspecialchars($pack); ?> (<?php echo $unit; ?>)</option>
+                    <?php endforeach; ?>
+                </select>
+                <label for="packaging_quantity_${formCount}">Quantity per Package (e.g., kg per Jar, pieces per Bunch):</label>
+                <input type="number" name="packaging_quantity[]" id="packaging_quantity_${formCount}" step="0.01" min="0.01" required>
                 <label for="image_${formCount}">Image:</label>
                 <input type="file" name="image[]" id="image_${formCount}" accept=".jpg,.jpeg,.png,.webp">
             `;

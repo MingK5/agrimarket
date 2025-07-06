@@ -26,44 +26,6 @@ $stmt->execute([$vendorId]);
 $serviceListings = $stmt->fetchColumn();
 $allowedCategories = $serviceListings ? array_map('trim', explode(',', $serviceListings)) : [];
 
-if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    $name = trim($_POST['name']);
-    $description = trim($_POST['description']);
-    $price = trim($_POST['price']);
-    $category = trim($_POST['category']);
-    $quantity = trim($_POST['quantity']);
-    $reorder_level = trim($_POST['reorder_level']);
-    $image = $_FILES['image']['name'] ? $_FILES['image']['name'] : $product['image'];
-
-    $errors = [];
-    if ($name && $price && $category && $quantity && $reorder_level && in_array($category, $allowedCategories)) {
-        $price = floatval($price);
-        $quantity = intval($quantity);
-        $reorder_level = intval($reorder_level);
-        $targetDir = "../assets/";
-        $targetFile = $targetDir . basename($_FILES['image']['name']);
-        $imageFileType = strtolower(pathinfo($targetFile, PATHINFO_EXTENSION));
-        $allowedTypes = ['jpg', 'jpeg', 'png', 'webp'];
-
-        if ($_FILES['image']['name'] && !in_array($imageFileType, $allowedTypes)) {
-            $errors[] = "Only JPG, JPEG, PNG, and WEBP files are allowed.";
-        } else {
-            if ($_FILES['image']['name'] && move_uploaded_file($_FILES['image']['tmp_name'], $targetFile)) {
-                $stmt = $pdo->prepare("UPDATE product SET name = ?, description = ?, price = ?, category = ?, quantity = ?, reorder_level = ?, image = ? WHERE id = ? AND vendor_id = ?");
-                $stmt->execute([$name, $description, $price, $category, $quantity, $reorder_level, $image, $productId, $vendorId]);
-            } else {
-                $stmt = $pdo->prepare("UPDATE product SET name = ?, description = ?, price = ?, category = ?, quantity = ?, reorder_level = ? WHERE id = ? AND vendor_id = ?");
-                $stmt->execute([$name, $description, $price, $category, $quantity, $reorder_level, $productId, $vendorId]);
-            }
-            header("Location: product_details.php?id=" . $productId . "&success=1");
-            exit();
-        }
-    } else {
-        $errors[] = "Missing or invalid data. Category must be one of: " . implode(", ", $allowedCategories);
-    }
-}
-
-// Map packaging to units
 $packagingToUnit = [
     'Bag' => 'kg',
     'Box' => 'piece',
@@ -82,7 +44,49 @@ $packagingToUnit = [
     'Cage' => 'piece',
     'Pen' => 'piece',
 ];
+
+if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+    $name = trim($_POST['name']);
+    $description = trim($_POST['description']);
+    $price = trim($_POST['price']);
+    $category = trim($_POST['category']);
+    $quantity = trim($_POST['quantity']);
+    $reorder_level = trim($_POST['reorder_level']);
+    $packaging = trim($_POST['packaging']);
+    $packaging_quantity = trim($_POST['packaging_quantity']);
+    $image = $_FILES['image']['name'] ? $_FILES['image']['name'] : $product['image'];
+
+    $errors = [];
+    if ($name && $price && $category && $quantity && $reorder_level && $packaging && $packaging_quantity && in_array($category, $allowedCategories) && array_key_exists($packaging, $packagingToUnit) && $packaging_quantity > 0) {
+        $price = floatval($price);
+        $quantity = intval($quantity);
+        $reorder_level = intval($reorder_level);
+        $packaging_quantity = floatval($packaging_quantity);
+        $targetDir = "../assets/";
+        $targetFile = $targetDir . basename($_FILES['image']['name']);
+        $imageFileType = strtolower(pathinfo($targetFile, PATHINFO_EXTENSION));
+        $allowedTypes = ['jpg', 'jpeg', 'png', 'webp'];
+
+        if ($_FILES['image']['name'] && !in_array($imageFileType, $allowedTypes)) {
+            $errors[] = "Only JPG, JPEG, PNG, and WEBP files are allowed.";
+        } else {
+            if ($_FILES['image']['name'] && move_uploaded_file($_FILES['image']['tmp_name'], $targetFile)) {
+                $stmt = $pdo->prepare("UPDATE product SET name = ?, description = ?, price = ?, category = ?, quantity = ?, reorder_level = ?, image = ?, packaging = ?, packaging_quantity = ? WHERE id = ? AND vendor_id = ?");
+                $stmt->execute([$name, $description, $price, $category, $quantity, $reorder_level, $image, $packaging, $packaging_quantity, $productId, $vendorId]);
+            } else {
+                $stmt = $pdo->prepare("UPDATE product SET name = ?, description = ?, price = ?, category = ?, quantity = ?, reorder_level = ?, packaging = ?, packaging_quantity = ? WHERE id = ? AND vendor_id = ?");
+                $stmt->execute([$name, $description, $price, $category, $quantity, $reorder_level, $packaging, $packaging_quantity, $productId, $vendorId]);
+            }
+            header("Location: product_details.php?id=" . $productId . "&success=1");
+            exit();
+        }
+    } else {
+        $errors[] = "Missing or invalid data. Category must be one of: " . implode(", ", $allowedCategories) . "; Packaging must be valid; Packaging quantity must be positive.";
+    }
+}
+
 $unit = $packagingToUnit[$product['packaging']] ?? 'piece';
+$packagingQuantity = $product['packaging_quantity'] ?? 1; // Fallback to 1 if undefined
 ?>
 
 <!DOCTYPE html>
@@ -132,10 +136,20 @@ $unit = $packagingToUnit[$product['packaging']] ?? 'piece';
                         </option>
                     <?php endforeach; ?>
                 </select>
-                <label for="quantity">Quantity:</label>
+                <label for="quantity">Quantity (number of packages):</label>
                 <input type="number" name="quantity" id="quantity" min="0" value="<?php echo htmlspecialchars($product['quantity']); ?>" required>
-                <label for="reorder_level">Reorder Level:</label>
+                <label for="reorder_level">Reorder Level (number of packages):</label>
                 <input type="number" name="reorder_level" id="reorder_level" min="0" value="<?php echo htmlspecialchars($product['reorder_level']); ?>" required>
+                <label for="packaging">Packaging:</label>
+                <select name="packaging" id="packaging" required>
+                    <?php foreach ($packagingToUnit as $pack => $unit): ?>
+                        <option value="<?php echo htmlspecialchars($pack); ?>" <?php echo $product['packaging'] === $pack ? 'selected' : ''; ?>>
+                            <?php echo htmlspecialchars($pack); ?> (<?php echo $unit; ?>)
+                        </option>
+                    <?php endforeach; ?>
+                </select>
+                <label for="packaging_quantity">Quantity per Package (e.g., kg per Jar, pieces per Bunch):</label>
+                <input type="number" name="packaging_quantity" id="packaging_quantity" step="0.01" min="0.01" value="<?php echo htmlspecialchars($packagingQuantity); ?>" required>
                 <label for="image">Image:</label>
                 <input type="file" name="image" id="image" accept=".jpg,.jpeg,.png,.webp">
                 <?php if ($product['image']): ?>

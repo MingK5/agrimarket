@@ -29,7 +29,7 @@ if (!isset($_GET['id']) || !is_numeric($_GET['id'])) {
 $productId = (int)$_GET['id'];
 
 try {
-// Handle review deletion by admin (userType == 1)
+    // Handle review deletion by admin (userType == 1)
     if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['remove_review_id']) && $userType == 1) {
         $reviewId = (int)$_POST['remove_review_id'];
 
@@ -56,7 +56,7 @@ try {
         exit();
     }
 
-    // Handle vendor reply (userType == 3) - moved after $product is defined
+    // Handle vendor reply (userType == 3)
     if (
         $_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['vendor_reply_review_id']) && $userType == 3 && $product['vendor_id'] == $vendorId
     ) {
@@ -125,12 +125,25 @@ try {
 
     // Map packaging to units
     $packagingToUnit = [
-        'Bag' => 'kg', 'Box' => 'piece', 'Piece' => 'piece', 'Tray' => 'dozen',
-        'Jar' => 'kg', 'Cup' => 'liter', 'Pack' => 'kg', 'Wheel' => 'kg',
-        'Bottle' => 'liter', 'Root' => 'kg', 'Punnet' => 'kg', 'Head' => 'piece',
-        'Bunch' => 'piece', 'Whole' => 'piece', 'Cage' => 'piece', 'Pen' => 'piece'
+        'Bag' => 'kg',
+        'Box' => 'piece',
+        'Piece' => 'piece',
+        'Tray' => 'dozen',
+        'Jar' => 'kg',
+        'Cup' => 'liter',
+        'Pack' => 'kg',
+        'Wheel' => 'kg',
+        'Bottle' => 'liter',
+        'Root' => 'kg',
+        'Punnet' => 'kg',
+        'Head' => 'piece',
+        'Bunch' => 'piece',
+        'Whole' => 'piece',
+        'Cage' => 'piece',
+        'Pen' => 'piece',
     ];
     $unit = $packagingToUnit[$product['packaging']] ?? 'piece';
+    $packagingQuantity = $product['packaging_quantity'] ?? 1; // Fallback to 1 if undefined
 } catch (Exception $e) {
     die("Error: " . $e->getMessage());
 }
@@ -183,8 +196,8 @@ try {
     <?php endif; ?>
     <h2><?php echo htmlspecialchars($product['name']); ?></h2>
     <p><strong>Description:</strong> <?php echo htmlspecialchars($product['description'] ?? 'No description available.'); ?></p>
-    <p><strong>Price:</strong> RM<?php echo htmlspecialchars($product['price']); ?>/<?php echo $unit; ?></p>
-    <p><strong>Stock:</strong> <?php echo htmlspecialchars($product['quantity']); ?> <?php echo $unit; ?></p>
+    <p><strong>Price:</strong> RM<?php echo htmlspecialchars($product['price']); ?> / <?php echo htmlspecialchars($product['packaging']); ?> (<?php echo htmlspecialchars($packagingQuantity); ?> <?php echo $unit; ?>)</p>
+    <p><strong>Stock:</strong> <?php echo htmlspecialchars($product['quantity']); ?> <?php echo htmlspecialchars($product['packaging']); ?> (<?php echo htmlspecialchars($product['quantity'] * $packagingQuantity); ?> <?php echo $unit; ?>)</p>
 
     <?php if (in_array($userType, [1, 2, 3])): ?>
         <p><strong>Visited:</strong> <?php echo $product['visit_count']; ?> times</p>
@@ -192,13 +205,13 @@ try {
     <?php endif; ?>
 
     <?php if ($userType == 3 && $product['vendor_id'] == $vendorId && $product['quantity'] < $product['reorder_level']): ?>
-        <p class="alert">Low Stock Alert: below reorder level (<?php echo $product['reorder_level']; ?> <?php echo $unit; ?>)</p>
+        <p class="alert">Low Stock Alert: below reorder level (<?php echo $product['reorder_level']; ?> <?php echo htmlspecialchars($product['packaging']); ?> / <?php echo htmlspecialchars($product['reorder_level'] * $packagingQuantity); ?> <?php echo $unit; ?>)</p>
     <?php endif; ?>
 
     <?php if ($userType == 4): ?>
         <form method="POST" action="shopping_cart.php" style="display: inline;">
             <input type="hidden" name="product_id" value="<?php echo $product['id']; ?>">
-            <label for="quantity">Quantity:</label>
+            <label for="quantity">Quantity (<?php echo htmlspecialchars($product['packaging']); ?>):</label>
             <input type="number" name="quantity" value="1" min="1" max="<?php echo $product['quantity']; ?>">
             <br><br>
             <button type="submit">Add to Cart</button>
@@ -294,9 +307,8 @@ window.addEventListener('DOMContentLoaded', () => {
     const msg = urlParams.get('msg');
 
     if (msg === 'review_deleted') {
-    alert("Review has been successfully deleted.");
-    // Remove the msg parameter from the URL
-    window.history.replaceState({}, document.title, window.location.pathname + window.location.search.replace(/([?&])msg=review_deleted(&)?/, '$1').replace(/[\?&]$/, ''));
+        alert("Review has been successfully deleted.");
+        window.history.replaceState({}, document.title, window.location.pathname + window.location.search.replace(/([?&])msg=review_deleted(&)?/, '$1').replace(/[\?&]$/, ''));
     }
     if (msg === 'reply_added') {
         alert("Reply has been added.");
@@ -304,7 +316,5 @@ window.addEventListener('DOMContentLoaded', () => {
     }
 });
 </script>
-
-
 </body>
 </html>
