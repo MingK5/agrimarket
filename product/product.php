@@ -125,13 +125,14 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && $userType == 3) {
             <p>No products found.</p>
         <?php else: ?>
             <?php foreach ($products as $product): ?>
+                <?php $packagingQuantity = $product['packaging_quantity'] ?? 1; // Fallback to 1 if undefined ?>
                 <a href="product_details.php?id=<?php echo $product['id']; ?>" style="text-decoration: none; color: inherit;">
                     <div class="product-item">
                         <?php if ($product['image']): ?>
                             <img src="../assets/<?php echo htmlspecialchars($product['image']); ?>" alt="<?php echo htmlspecialchars($product['name']); ?>">
                         <?php endif; ?>
                         <h4><?php echo htmlspecialchars($product['name']); ?></h4>
-                        <p>Price: RM<?php echo htmlspecialchars($product['price']); ?>/<?php echo $packagingToUnit[$product['packaging']] ?? 'piece'; ?></p>
+                        <p>Price: RM<?php echo htmlspecialchars($product['price']); ?> / <?php echo htmlspecialchars($product['packaging']); ?> (<?php echo htmlspecialchars($packagingQuantity); ?> <?php echo $packagingToUnit[$product['packaging']] ?? 'piece'; ?>)</p>
                     </div>
                 </a>
             <?php endforeach; ?>
