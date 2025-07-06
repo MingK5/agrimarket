@@ -154,7 +154,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['submit_products'])) {
         let formCount = 1;
         function addProductForm() {
             const container = document.getElementById('productForms');
-            const newFormGrade = document.createElement('div');
+            const newForm = document.createElement('div');
             newForm.className = 'product-form';
             newForm.innerHTML = `
                 <label for="name_${formCount}">Product Name:</label>
